@@ -25,31 +25,42 @@ class TaxPayer:
     def get_prof_picture(self, path=None):
         # setting a profile picture is optional
         if not path:
-            pass
-
-        # defends against path traversal attacks
-        if path.startswith('/') or path.startswith('..'):
             return None
 
-        # builds path
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        prof_picture_path = os.path.normpath(os.path.join(base_dir, path))
+        base_dir = os.path.realpath(os.path.dirname(os.path.abspath(__file__)))
+        requested_path = os.path.realpath(os.path.join(base_dir, path))
 
-        with open(prof_picture_path, 'rb') as pic:
-            picture = bytearray(pic.read())
+        # Allow access to files only within the current directory and its subdirectories
+        if os.path.commonpath([base_dir, requested_path]) != base_dir:
+            return None
 
-        # assume that image is returned on screen after this
-        return prof_picture_path
+        if not os.path.isfile(requested_path):
+            return None
 
+        with open(requested_path, 'rb') as picture:
+            self.prof_picture = bytearray(picture.read())
+
+        return requested_path
+        
+      
     # returns the path of an attached tax form that every user should submit
     def get_tax_form_attachment(self, path=None):
-        tax_data = None
 
         if not path:
             raise Exception("Error: Tax form is required for all users")
 
-        with open(path, 'rb') as form:
-            tax_data = bytearray(form.read())
+        base_dir = os.path.realpath(os.path.dirname(os.path.abspath(__file__)))
+        requested_path = os.path.realpath(path)
 
-        # assume that tax data is returned on screen after this
-        return path
+        # Allow access to files only within the current directory and its subdirectories
+        if os.path.commonpath([base_dir, requested_path]) != base_dir:
+            return None
+
+        if not os.path.isfile(requested_path):
+            return None
+
+        with open(requested_path, 'rb') as tax_form:
+            tax_data = bytearray(tax_form.read())
+
+        return requested_path
+
