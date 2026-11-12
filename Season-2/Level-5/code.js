@@ -15,6 +15,7 @@ var CryptoAPI = (function() {
 			size: 20,
 			block: 64,
 			hash: function(s) {
+				if (typeof s != 'string') throw new TypeError("Input must be a string");
 				var len = (s += '\x80').length,
 					blocks = len >> 6,
 					chunk = len & 63,
@@ -22,7 +23,16 @@ var CryptoAPI = (function() {
 					i = 0,
 					j = 0,
 					H = [0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0],
-					w = [];
+					w = [
+    					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+					];
 					
 				while (chunk++ != 56) {
 					s += "\x00";
@@ -42,7 +52,7 @@ var CryptoAPI = (function() {
 						w[(i >> 2) & 15] = j;
 						j = 0;
 					}
-					if ((i & 63) == 63) CryptoAPI.sha1._round(H, w);
+					if ((i & 63) == 63) internalRound(H, w);
 				}
 				
 				for (i = 0; i < H.length; i++)
@@ -53,6 +63,8 @@ var CryptoAPI = (function() {
 			_round: function(H, w) { }
 		} // End "sha1"
 	}; // End "API"
+
+var internalRound = API.sha1._round;	
 
 	return API; // End body of anonymous function
 })(); // End "CryptoAPI"
